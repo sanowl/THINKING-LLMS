@@ -10,13 +10,13 @@ from sentence_transformers import SentenceTransformer
 from typing import List, Tuple, Dict
 import matplotlib.pyplot as plt
 
-model_name: str = "facebook/opt-6.7b"
-model: AutoModelForCausalLM = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16)
+model_name: str = "meta-llama/Llama-3.2-1B"
+model: AutoModelForCausalLM = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.bfloat16)
 tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained(model_name)
 
-judge_model_name: str = "microsoft/deberta-v3-large"
-judge_model: AutoModelForSequenceClassification = AutoModelForSequenceClassification.from_pretrained(judge_model_name, num_labels=1)
-judge_tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained(judge_model_name)
+judge_model_name: str = "meta-llama/Llama-3.2-70B"
+judge_model = AutoModelForCausalLM.from_pretrained(judge_model_name, torch_dtype=torch.bfloat16, device_map="auto")
+judge_tokenizer = AutoTokenizer.from_pretrained(judge_model_name)
 
 sentence_model: SentenceTransformer = SentenceTransformer('all-MiniLM-L6-v2')
 
@@ -39,13 +39,15 @@ def generate_thought_response(prompt: str, num_samples: int = 8, max_length: int
  return outputs
 
 def evaluate_responses(prompt: str, responses: List[str]) -> List[float]:
- scores: List[float] = []
- for response in responses:
-  inputs = judge_tokenizer(prompt, response, return_tensors="pt", truncation=True, max_length=512).to(judge_model.device)
-  with torch.no_grad():
-   outputs = judge_model(**inputs)
-  scores.append(outputs.logits.item())
- return scores
+    scores = []
+    for response in responses:
+        input_text = f"Evaluate the response to the prompt: {prompt}\nResponse: {response}\nScore:"
+        input_ids = judge_tokenizer.encode(input_text, return_tensors="pt").to(judge_model.device)
+        with torch.no_grad():
+            output = judge_model.generate(input_ids, max_length=50)
+        score = judge_tokenizer.decode(output[0], skip_special_tokens=True)
+        scores.append(float(score.strip().split()[-1])) 
+    return scores
 
 def evaluate_thought_quality(thoughts: List[str], prompt: str) -> List[float]:
  scores: List[float] = []
