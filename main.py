@@ -1,7 +1,6 @@
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, AutoModelForSequenceClassification
 from datasets import load_dataset
-import random
 import numpy as np
 from torch.optim import AdamW
 from tqdm import tqdm
@@ -9,6 +8,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers import SentenceTransformer
 from typing import List, Tuple, Dict
 import matplotlib.pyplot as plt
+import secrets
 
 model_name: str = "meta-llama/Llama-3.2-1B"
 model: AutoModelForCausalLM = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.bfloat16)
@@ -74,7 +74,7 @@ def apply_length_control(scores: List[float], responses: List[str], rho: float =
 def categorize_prompt(prompt: str) -> str:
  categories = ["Math", "Science", "History", "Literature", "General Knowledge"]
  # This needs to be better  but for now i will add this
- return random.choice(categories)
+ return secrets.choice(categories)
 
 def train_tpo(num_iterations: int = 4, num_prompts: int = 5000, learning_rate: float = 1e-5) -> Dict[str, List[float]]:
  dataset = load_dataset("wikitext", "wikitext-2-raw-v1", split="train")
@@ -82,7 +82,7 @@ def train_tpo(num_iterations: int = 4, num_prompts: int = 5000, learning_rate: f
  category_performances: Dict[str, List[float]] = {cat: [] for cat in ["Math", "Science", "History", "Literature", "General Knowledge"]}
  
  for iteration in tqdm(range(num_iterations), desc="Training Iterations"):
-  prompts: List[str] = random.sample(dataset['text'], num_prompts)
+  prompts: List[str] = secrets.SystemRandom().sample(dataset['text'], num_prompts)
   for prompt in tqdm(prompts, desc="Prompts", leave=False):
    category = categorize_prompt(prompt)
    thought_responses: List[Tuple[str, str]] = generate_thought_response(prompt)
