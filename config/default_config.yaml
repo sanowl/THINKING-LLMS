@@ -1,0 +1,33 @@
+# Model configurations
+base_model_name: "gpt2"
+judge_model_name: "gpt2"
+sentence_model_name: "all-MiniLM-L6-v2"
+
+# Training parameters
+batch_size: 32
+gradient_accumulation_steps: 4
+learning_rate: 2e-5
+warmup_steps: 1000
+max_steps: 100000
+eval_steps: 500
+save_steps: 1000
+
+# Generation parameters
+max_length: 200
+num_return_sequences: 4
+temperature_range: [0.5, 1.2]
+temperature_steps: 4
+
+# Optimization parameters
+weight_decay: 0.3
+max_grad_norm: 3.0
+fp16: true
+
+# System parameters
+seed: 42
+distributed: false
+num_workers: 4
+
+# Logging parameters
+log_level: "INFO"
+experiment_name: "tpo_default_run" 

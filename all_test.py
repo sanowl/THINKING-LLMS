@@ -1,5 +1,3 @@
-
-
 import os
 import json
 import random
@@ -33,8 +31,9 @@ from nltk.translate.bleu_score import sentence_bleu
 from rouge_score import rouge_scorer
 from datasets import load_dataset
 import matplotlib.pyplot as plt
-import seaborn as sns
+import seaborn as sns 
 from typing_extensions import Protocol
+
 
 # Setup enhanced logging
 logging.basicConfig(
@@ -65,12 +64,13 @@ class TrainingConfig:
     max_length: int = 200
     num_return_sequences: int = 4
     temperature_range: Tuple[float, float] = (0.5, 1.2)
+
     temperature_steps: int = 4
     
     # Optimization parameters
-    weight_decay: float = 0.01
-    max_grad_norm: float = 1.0
-    fp16: bool = True
+    weight_decay: float = 0.3
+    max_grad_norm: float = 3.0
+    fp16: bool =  True
     
     # System parameters
     seed: int = 42
@@ -88,7 +88,9 @@ class TrainingConfig:
             self.temperature_range[0],
             self.temperature_range[1],
             self.temperature_steps
+
         )
+        self._validate_config() 
         self._validate_config()
     
     def _validate_config(self):

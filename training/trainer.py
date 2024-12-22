@@ -1,4 +1,3 @@
-# training/trainer.py
 import torch
 from torch.cuda.amp import autocast, GradScaler
 from torch.utils.data import DataLoader
@@ -91,8 +90,6 @@ class Trainer:
                 micro_loss.backward()
             
             total_loss += micro_loss.item()
-        
-        # Optimizer step with gradient clipping
         if self.scaler:
             self.scaler.unscale_(optimizer)
             torch.nn.utils.clip_grad_norm_(
@@ -110,9 +107,7 @@ class Trainer:
         
         scheduler.step()
         optimizer.zero_grad()
-        
         return total_loss
-    
     def _save_checkpoint(
         self,
         model: torch.nn.Module,
